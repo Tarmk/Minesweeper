@@ -1,14 +1,8 @@
-/* ============================================================
-   TWISTED MINESWEEPER
-   Phase 1: classic grey Minesweeper.
-   Phase 2 (body.escape): dark, glitched escape maze.
-   ============================================================ */
-
 :root {
   --tile: 34px;
   --grey: #c0c0c0;
   --grey-dark: #808080;
-  --grey-light: #ffffff;
+  --grey-light: #fff;
 }
 
 * { box-sizing: border-box; user-select: none; }
@@ -55,11 +49,11 @@ h1 {
   color: #333;
 }
 
-body.escape h1 { color: #b39cff; text-shadow: 0 0 8px #6a3fd6; }
+body.escape h1 {
+  color: #b39cff;
+  text-shadow: 0 0 8px #6a3fd6;
+}
 
-/* ---------- HUD ---------- */
-
-/* HUD and panel stay above tiles that drift out of the blob */
 .hud {
   display: flex;
   align-items: center;
@@ -81,7 +75,6 @@ body.escape h1 { color: #b39cff; text-shadow: 0 0 8px #6a3fd6; }
   text-align: center;
 }
 
-/* the mine counter flinches whenever new mines grow into the map */
 .counter.bump {
   animation: counter-bump 0.6s ease-out;
 }
@@ -99,6 +92,7 @@ button {
   border: 3px outset var(--grey-light);
   cursor: pointer;
 }
+
 button:active { border-style: inset; }
 
 body.escape button {
@@ -106,8 +100,6 @@ body.escape button {
   color: #cbb8ff;
   border-color: #44446a;
 }
-
-/* ---------- Board & tiles ---------- */
 
 #board {
   display: grid;
@@ -117,17 +109,12 @@ body.escape button {
   background: var(--grey-dark);
 }
 
-/* once the map starts growing, the board's square frame vanishes —
-   the blob of tiles IS the map now. .flicker covers the glitch moment,
-   before .escape is applied. */
 body.flicker #board,
 body.escape #board {
   background: transparent;
   border-color: transparent;
 }
 
-/* once the world expands, tiles shrink a little so the growing blob
-   still fits on screen */
 body.flicker,
 body.escape {
   --tile: 30px;
@@ -153,25 +140,22 @@ body.escape {
   cursor: default;
 }
 
-/* classic number colors */
-.tile[data-n="1"] { color: #0000ff; }
-.tile[data-n="2"] { color: #007b00; }
-.tile[data-n="3"] { color: #ff0000; }
-.tile[data-n="4"] { color: #00007b; }
-.tile[data-n="5"] { color: #7b0000; }
-.tile[data-n="6"] { color: #007b7b; }
-.tile[data-n="7"] { color: #000000; }
-.tile[data-n="8"] { color: #7b7b7b; }
+.tile[data-n="1"] { color: #00f; }
+.tile[data-n="2"] { color: #070; }
+.tile[data-n="3"] { color: #f00; }
+.tile[data-n="4"] { color: #007; }
+.tile[data-n="5"] { color: #700; }
+.tile[data-n="6"] { color: #077; }
+.tile[data-n="7"] { color: #000; }
+.tile[data-n="8"] { color: #777; }
 
-.tile.mine-hit { background: #ff4444 !important; }
+.tile.mine-hit { background: #f44 !important; }
 
-/* empty space outside the blob */
 .tile.void {
   visibility: hidden;
   pointer-events: none;
 }
 
-/* new tiles pop into existence with a glow that fades out */
 .tile.spawn {
   animation: spawn-pop 0.4s ease-out;
 }
@@ -187,10 +171,8 @@ body.escape {
   100% { transform: scale(1); }
 }
 
-/* ---------- Escape-mode tile skins ---------- */
-
 body.escape .tile {
-  background: #1b1b2e;              /* hidden = dark and risky */
+  background: #1b1b2e;
   border: 3px outset #33334f;
   border-radius: 5px;
   color: #e8e0ff;
@@ -210,7 +192,6 @@ body.escape .tile.exit {
   animation: exit-pulse 1.2s infinite alternate;
 }
 
-/* until the key is found, the door sits dim and grey-green */
 body.escape .tile.exit.locked {
   filter: saturate(0.35) brightness(0.75);
   animation: none;
@@ -221,7 +202,6 @@ body.escape .tile.exit.locked {
   to   { box-shadow: inset 0 0 16px #2bff88, 0 0 10px #2bff88; }
 }
 
-/* repair parts glow until picked up */
 body.escape .tile.item {
   animation: item-pulse 1.2s infinite alternate;
 }
@@ -249,8 +229,6 @@ body.escape .tile[data-item="chip"] {
   to   { box-shadow: inset 0 0 16px var(--item-glow), 0 0 10px var(--item-glow); }
 }
 
-/* ---------- The player: a proper little 2D character ---------- */
-
 .player {
   position: absolute;
   inset: 2px;
@@ -261,7 +239,6 @@ body.escape .tile[data-item="chip"] {
   pointer-events: none;
 }
 
-/* jellybean body with eyes (::before) and feet (::after) */
 .player .body {
   position: relative;
   width: 20px;
@@ -273,7 +250,7 @@ body.escape .tile[data-item="chip"] {
   animation: idle-bob 0.7s infinite alternate ease-in-out;
 }
 
-.player .body::before { /* eyes */
+.player .body::before {
   content: "";
   position: absolute;
   top: 7px;
@@ -285,7 +262,7 @@ body.escape .tile[data-item="chip"] {
   box-shadow: 8px 0 0 #222;
 }
 
-.player .body::after { /* feet */
+.player .body::after {
   content: "";
   position: absolute;
   bottom: -4px;
@@ -302,7 +279,6 @@ body.escape .tile[data-item="chip"] {
   to   { transform: translateY(-2px) scaleX(1.05); }
 }
 
-/* Space pressed: crouched and glowing green, ready to leap */
 .player.armed .body {
   background: linear-gradient(#b6ffd2, #2bff88);
   border-color: #0d3d22;
@@ -315,7 +291,6 @@ body.escape .tile[data-item="chip"] {
   to   { transform: translateY(3px) scale(1.15, 0.72); }
 }
 
-/* the leap itself: big arc with a squash on landing */
 .player.jumping .body {
   animation: hop 0.35s ease-out;
 }
@@ -326,8 +301,6 @@ body.escape .tile[data-item="chip"] {
   80%  { transform: translateY(1px) scale(1.15, 0.8); }
   100% { transform: translateY(0) scale(1, 1); }
 }
-
-/* ---------- Panels ---------- */
 
 .panel {
   position: relative;
@@ -348,8 +321,6 @@ body.escape .panel {
   border-color: #33334f;
   color: #b39cff;
 }
-
-/* ---------- Glitch / overlay ---------- */
 
 #overlay {
   position: fixed;
@@ -408,7 +379,6 @@ body.escape .panel {
   100% { transform: translate(0, 0); }
 }
 
-/* screen shake applied to the whole game frame */
 .shake { animation: shake 0.18s infinite; }
 
 @keyframes shake {
@@ -418,7 +388,6 @@ body.escape .panel {
   100% { transform: translate(1px, 0) rotate(0.15deg); }
 }
 
-/* soft glitch pulse: no inversion/strobe, just a quick brightness shimmer */
 body.flicker { animation: flicker 0.35s infinite; }
 
 @keyframes flicker {
