@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Minesweeper</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="wrap" id="wrap">
+    <h1 id="title">MINESWEEPER</h1>
+
+    <div class="hud">
+      <div class="counter" id="mine-counter">MINES: 22</div>
+      <button id="restart-btn" title="Restart">RESTART</button>
+      <div class="counter" id="status-counter">SAFE: 0</div>
+    </div>
+
+    <div id="board" oncontextmenu="return false"></div>
+
+    <div class="panel" id="objective">
+      Left click to reveal a tile. Right click to flag a mine.
+    </div>
+  </div>
+
+  <div id="overlay" class="hidden">
+    <div class="glitch-text" id="overlay-text" data-text="SOMETHING IS WRONG">SOMETHING IS WRONG</div>
+    <button id="overlay-restart" class="hidden">RESTART</button>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>

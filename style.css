@@ -1,0 +1,429 @@
+/* ============================================================
+   TWISTED MINESWEEPER
+   Phase 1: classic grey Minesweeper.
+   Phase 2 (body.escape): dark, glitched escape maze.
+   ============================================================ */
+
+:root {
+  --tile: 34px;
+  --grey: #c0c0c0;
+  --grey-dark: #808080;
+  --grey-light: #ffffff;
+}
+
+* { box-sizing: border-box; user-select: none; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #bdbdbd;
+  font-family: "Courier New", Courier, monospace;
+  transition: background 0.6s;
+}
+
+body.escape { background: #0a0a12; }
+
+.wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 18px;
+  background: var(--grey);
+  border: 4px outset var(--grey-light);
+  transition: background 0.6s, border-color 0.6s;
+}
+
+body.escape .wrap {
+  background: #14141f;
+  border: 4px outset #2c2c44;
+  animation: wrap-breathe 4s ease-in-out infinite alternate;
+}
+
+@keyframes wrap-breathe {
+  from { box-shadow: 0 0 30px rgba(80, 40, 160, 0.3); }
+  to   { box-shadow: 0 0 70px rgba(130, 70, 255, 0.55); }
+}
+
+h1 {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: 4px;
+  color: #333;
+}
+
+body.escape h1 { color: #b39cff; text-shadow: 0 0 8px #6a3fd6; }
+
+/* ---------- HUD ---------- */
+
+/* HUD and panel stay above tiles that drift out of the blob */
+.hud {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  position: relative;
+  z-index: 3;
+}
+
+.counter {
+  background: #000;
+  color: #f00;
+  padding: 4px 8px;
+  font-weight: bold;
+  font-size: 14px;
+  border: 2px inset var(--grey-light);
+  min-width: 92px;
+  text-align: center;
+}
+
+/* the mine counter flinches whenever new mines grow into the map */
+.counter.bump {
+  animation: counter-bump 0.6s ease-out;
+}
+
+@keyframes counter-bump {
+  30% { transform: scale(1.18); color: #ffe14d; }
+}
+
+button {
+  font-family: inherit;
+  font-weight: bold;
+  font-size: 13px;
+  padding: 5px 14px;
+  background: var(--grey);
+  border: 3px outset var(--grey-light);
+  cursor: pointer;
+}
+button:active { border-style: inset; }
+
+body.escape button {
+  background: #22223a;
+  color: #cbb8ff;
+  border-color: #44446a;
+}
+
+/* ---------- Board & tiles ---------- */
+
+#board {
+  display: grid;
+  grid-template-columns: repeat(12, var(--tile));
+  grid-template-rows: repeat(12, var(--tile));
+  border: 4px inset var(--grey-light);
+  background: var(--grey-dark);
+}
+
+/* once the map starts growing, the board's square frame vanishes —
+   the blob of tiles IS the map now. .flicker covers the glitch moment,
+   before .escape is applied. */
+body.flicker #board,
+body.escape #board {
+  background: transparent;
+  border-color: transparent;
+}
+
+/* once the world expands, tiles shrink a little so the growing blob
+   still fits on screen */
+body.flicker,
+body.escape {
+  --tile: 30px;
+}
+
+.tile {
+  width: var(--tile);
+  height: var(--tile);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 17px;
+  position: relative;
+  background: var(--grey);
+  border: 3px outset var(--grey-light);
+  cursor: pointer;
+}
+
+.tile.revealed {
+  border: 1px solid var(--grey-dark);
+  background: #d6d6d6;
+  cursor: default;
+}
+
+/* classic number colors */
+.tile[data-n="1"] { color: #0000ff; }
+.tile[data-n="2"] { color: #007b00; }
+.tile[data-n="3"] { color: #ff0000; }
+.tile[data-n="4"] { color: #00007b; }
+.tile[data-n="5"] { color: #7b0000; }
+.tile[data-n="6"] { color: #007b7b; }
+.tile[data-n="7"] { color: #000000; }
+.tile[data-n="8"] { color: #7b7b7b; }
+
+.tile.mine-hit { background: #ff4444 !important; }
+
+/* empty space outside the blob */
+.tile.void {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* new tiles pop into existence with a glow that fades out */
+.tile.spawn {
+  animation: spawn-pop 0.4s ease-out;
+}
+
+.tile.fresh {
+  box-shadow: 0 0 16px #9d7bff, inset 0 0 10px #9d7bff;
+  z-index: 1;
+}
+
+@keyframes spawn-pop {
+  0%   { transform: scale(0) rotate(25deg); }
+  55%  { transform: scale(1.18); }
+  100% { transform: scale(1); }
+}
+
+/* ---------- Escape-mode tile skins ---------- */
+
+body.escape .tile {
+  background: #1b1b2e;              /* hidden = dark and risky */
+  border: 3px outset #33334f;
+  border-radius: 5px;
+  color: #e8e0ff;
+  cursor: default;
+}
+
+body.escape .tile.revealed {
+  background: #2e2e4a;
+  border: 1px solid #101020;
+  text-shadow: 0 0 6px currentColor;
+}
+
+body.escape .tile.exit {
+  background: #0d3d22;
+  border: 1px solid #2bff88;
+  box-shadow: inset 0 0 12px #2bff88;
+  animation: exit-pulse 1.2s infinite alternate;
+}
+
+/* until the key is found, the door sits dim and grey-green */
+body.escape .tile.exit.locked {
+  filter: saturate(0.35) brightness(0.75);
+  animation: none;
+}
+
+@keyframes exit-pulse {
+  from { box-shadow: inset 0 0 6px #2bff88; }
+  to   { box-shadow: inset 0 0 16px #2bff88, 0 0 10px #2bff88; }
+}
+
+/* repair parts glow until picked up */
+body.escape .tile.item {
+  animation: item-pulse 1.2s infinite alternate;
+}
+
+body.escape .tile[data-item="key"] {
+  background: #3a2f08;
+  border: 1px solid #ffd93b;
+  --item-glow: #ffd93b;
+}
+
+body.escape .tile[data-item="fuse"] {
+  background: #15340f;
+  border: 1px solid #8dff4a;
+  --item-glow: #8dff4a;
+}
+
+body.escape .tile[data-item="chip"] {
+  background: #102b3d;
+  border: 1px solid #55d9ff;
+  --item-glow: #55d9ff;
+}
+
+@keyframes item-pulse {
+  from { box-shadow: inset 0 0 6px var(--item-glow); }
+  to   { box-shadow: inset 0 0 16px var(--item-glow), 0 0 10px var(--item-glow); }
+}
+
+/* ---------- The player: a proper little 2D character ---------- */
+
+.player {
+  position: absolute;
+  inset: 2px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* jellybean body with eyes (::before) and feet (::after) */
+.player .body {
+  position: relative;
+  width: 20px;
+  height: 24px;
+  background: linear-gradient(#ffe884, #ffc93b);
+  border: 1px solid #8a6d00;
+  border-radius: 48% 48% 34% 34%;
+  box-shadow: 0 0 10px rgba(255, 217, 59, 0.8);
+  animation: idle-bob 0.7s infinite alternate ease-in-out;
+}
+
+.player .body::before { /* eyes */
+  content: "";
+  position: absolute;
+  top: 7px;
+  left: 4px;
+  width: 4px;
+  height: 5px;
+  background: #222;
+  border-radius: 50%;
+  box-shadow: 8px 0 0 #222;
+}
+
+.player .body::after { /* feet */
+  content: "";
+  position: absolute;
+  bottom: -4px;
+  left: 2px;
+  width: 6px;
+  height: 4px;
+  background: #8a6d00;
+  border-radius: 2px;
+  box-shadow: 10px 0 0 #8a6d00;
+}
+
+@keyframes idle-bob {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-2px) scaleX(1.05); }
+}
+
+/* Space pressed: crouched and glowing green, ready to leap */
+.player.armed .body {
+  background: linear-gradient(#b6ffd2, #2bff88);
+  border-color: #0d3d22;
+  box-shadow: 0 0 14px #2bff88;
+  animation: crouch 0.4s infinite alternate ease-in-out;
+}
+
+@keyframes crouch {
+  from { transform: translateY(1px) scale(1.1, 0.82); }
+  to   { transform: translateY(3px) scale(1.15, 0.72); }
+}
+
+/* the leap itself: big arc with a squash on landing */
+.player.jumping .body {
+  animation: hop 0.35s ease-out;
+}
+
+@keyframes hop {
+  0%   { transform: translateY(2px) scale(1.1, 0.8); }
+  45%  { transform: translateY(-16px) scale(0.9, 1.2); }
+  80%  { transform: translateY(1px) scale(1.15, 0.8); }
+  100% { transform: translateY(0) scale(1, 1); }
+}
+
+/* ---------- Panels ---------- */
+
+.panel {
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  max-width: 440px;
+  background: #e8e8e8;
+  border: 2px inset var(--grey-light);
+  padding: 8px 10px;
+  font-size: 13px;
+  text-align: center;
+  min-height: 38px;
+  color: #222;
+}
+
+body.escape .panel {
+  background: #10101c;
+  border-color: #33334f;
+  color: #b39cff;
+}
+
+/* ---------- Glitch / overlay ---------- */
+
+#overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.82);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  z-index: 10;
+}
+
+#overlay.hidden { display: none; }
+.hidden { display: none !important; }
+
+.glitch-text {
+  position: relative;
+  color: #fff;
+  font-size: 34px;
+  font-weight: bold;
+  letter-spacing: 6px;
+  text-align: center;
+  animation: glitch-jitter 0.35s infinite;
+}
+
+.glitch-text::before,
+.glitch-text::after {
+  content: attr(data-text);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+}
+
+.glitch-text::before {
+  color: #ff2255;
+  transform: translate(-3px, -2px);
+  clip-path: inset(0 0 55% 0);
+  animation: glitch-jitter 0.35s infinite reverse;
+}
+
+.glitch-text::after {
+  color: #22ddff;
+  transform: translate(3px, 2px);
+  clip-path: inset(45% 0 0 0);
+  animation: glitch-jitter 0.35s infinite;
+}
+
+@keyframes glitch-jitter {
+  0%   { transform: translate(0, 0); }
+  20%  { transform: translate(-2px, 1px); }
+  40%  { transform: translate(2px, -1px); }
+  60%  { transform: translate(-1px, -1px); }
+  80%  { transform: translate(1px, 1px); }
+  100% { transform: translate(0, 0); }
+}
+
+/* screen shake applied to the whole game frame */
+.shake { animation: shake 0.18s infinite; }
+
+@keyframes shake {
+  0%   { transform: translate(0, 0) rotate(0); }
+  33%  { transform: translate(2px, -1px) rotate(0.25deg); }
+  66%  { transform: translate(-2px, 1px) rotate(-0.25deg); }
+  100% { transform: translate(1px, 0) rotate(0.15deg); }
+}
+
+/* soft glitch pulse: no inversion/strobe, just a quick brightness shimmer */
+body.flicker { animation: flicker 0.35s infinite; }
+
+@keyframes flicker {
+  0%   { filter: none; }
+  35%  { filter: brightness(1.12) saturate(1.25) hue-rotate(8deg); }
+  65%  { filter: brightness(0.96) saturate(1.1); }
+  100% { filter: none; }
+}
