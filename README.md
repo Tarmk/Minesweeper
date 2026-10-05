@@ -2,6 +2,8 @@
 
 Minesweeper submission for [Hack Club Twist](https://twist.hackclub.com/).
 
+**Play it:** https://tarmk.github.io/Minesweeper/
+
 ## what's the twist
 
 Normal 12×12 minesweeper at first. After 5 safe clicks something breaks — screen shakes, colors go weird, and the board turns into a little maze you're walking around inside.
@@ -20,6 +22,6 @@ Flags block your own movement in escape mode — unflag or jump over them.
 
 ## run it
 
-Open `index.html` or host on GitHub Pages. No build step.
+Open `index.html` in a browser. No build step. The `main` branch is published automatically with GitHub Pages at the link above.
 
 HTML + CSS + JS, no libraries.
