@@ -1,0 +1,11 @@
+{
+  "name": "dont-step-on-it-tests",
+  "private": true,
+  "description": "Browser tests for the game. The game itself needs no build or dependencies.",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.56.0"
+  }
+}
