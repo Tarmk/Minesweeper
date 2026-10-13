@@ -115,11 +115,6 @@ body.escape #board {
   border-color: transparent;
 }
 
-body.flicker,
-body.escape {
-  --tile: 30px;
-}
-
 .tile {
   width: var(--tile);
   height: var(--tile);
@@ -127,11 +122,12 @@ body.escape {
   align-items: center;
   justify-content: center;
   font-weight: bold;
-  font-size: 17px;
+  font-size: calc(var(--tile) * 0.5);
   position: relative;
   background: var(--grey);
   border: 3px outset var(--grey-light);
   cursor: pointer;
+  touch-action: manipulation;
 }
 
 .tile.revealed {
@@ -232,6 +228,8 @@ body.escape .tile[data-item="chip"] {
 .player {
   position: absolute;
   inset: 2px;
+  transform: scale(var(--s, 1));  /* --s = tile size / 30px, set by fitBoard() */
+  transform-origin: 50% 100%;
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -395,4 +393,53 @@ body.flicker { animation: flicker 0.35s infinite; }
   35%  { filter: brightness(1.12) saturate(1.25) hue-rotate(8deg); }
   65%  { filter: brightness(0.96) saturate(1.1); }
   100% { filter: none; }
+}
+
+/* ---------- touch controls (phones and tablets only) ---------- */
+
+button { touch-action: manipulation; }
+
+.touch {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+body.touch-device .touch { display: flex; }
+
+#flag-mode[aria-pressed="true"] {
+  background: #c62828;
+  color: #fff;
+}
+
+.dpad {
+  display: none;
+  grid-template-areas:
+    ". up ."
+    "left jump right"
+    ". down .";
+  grid-template-columns: repeat(3, 68px);
+  grid-auto-rows: 56px;
+  gap: 6px;
+}
+
+body.escape .dpad { display: grid; }
+
+.dpad button { font-size: 20px; padding: 0; }
+.dpad .up { grid-area: up; }
+.dpad .down { grid-area: down; }
+.dpad .left { grid-area: left; }
+.dpad .right { grid-area: right; }
+.dpad .jump { grid-area: jump; font-size: 13px; }
+
+body.escape #jump-btn.armed {
+  background: #2bff88;
+  color: #0d3d22;
+}
+
+@media (max-width: 480px) {
+  .wrap { padding: 12px; gap: 10px; }
+  h1 { font-size: 18px; letter-spacing: 3px; }
+  .counter { min-width: 0; font-size: 12px; }
 }

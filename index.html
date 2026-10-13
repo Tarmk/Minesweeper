@@ -3,7 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Twisted Minesweeper</title>
+  <title>Don't Step On It</title>
+  <meta name="description" content="Minesweeper that breaks after five clicks and turns into an escape maze. Find the key, fuse and chip, then get out." />
+  <meta name="theme-color" content="#14141f" />
+  <meta property="og:title" content="Don't Step On It" />
+  <meta property="og:description" content="Minesweeper that breaks after five clicks and turns into an escape maze." />
+  <meta property="og:image" content="https://tarmk.github.io/Minesweeper/docs/escape.png" />
+  <meta property="og:url" content="https://tarmk.github.io/Minesweeper/" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💣</text></svg>" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -18,8 +26,19 @@
 
     <div id="board" oncontextmenu="return false"></div>
 
-    <div class="panel" id="objective">
+    <div class="panel" id="objective" aria-live="polite">
       Left click to reveal. Right click to flag.
+    </div>
+
+    <div class="touch" id="touch">
+      <button id="flag-mode" aria-pressed="false">FLAG MODE: OFF</button>
+      <div class="dpad" aria-label="Movement">
+        <button class="up" data-dir="up" aria-label="Up">&#9650;</button>
+        <button class="left" data-dir="left" aria-label="Left">&#9664;</button>
+        <button class="jump" id="jump-btn">JUMP</button>
+        <button class="right" data-dir="right" aria-label="Right">&#9654;</button>
+        <button class="down" data-dir="down" aria-label="Down">&#9660;</button>
+      </div>
     </div>
   </div>
 

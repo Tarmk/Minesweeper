@@ -33,6 +33,11 @@ let jumpReady = false;
 let justJumped = false;
 let glitchTimer = null;
 let growTimer = null;
+let flagMode = false;
+
+// Phones and tablets have no right click and no keyboard: they get a flag-mode
+// toggle and an on-screen d-pad instead.
+const TOUCH = window.matchMedia("(pointer: coarse)").matches;
 
 const boardEl = document.getElementById("board");
 const wrapEl = document.getElementById("wrap");
@@ -43,10 +48,46 @@ const statEl = document.getElementById("status-counter");
 const overlayEl = document.getElementById("overlay");
 const overlayTextEl = document.getElementById("overlay-text");
 const overlayRestartEl = document.getElementById("overlay-restart");
+const flagModeEl = document.getElementById("flag-mode");
+const jumpEl = document.getElementById("jump-btn");
 
 document.getElementById("restart-btn").addEventListener("click", init);
 overlayRestartEl.addEventListener("click", init);
 document.addEventListener("keydown", onKey);
+window.addEventListener("resize", fitBoard);
+if (TOUCH) document.body.classList.add("touch-device");
+
+flagModeEl.addEventListener("click", () => setFlagMode(!flagMode));
+jumpEl.addEventListener("click", () => {
+  if (phase !== "escape") return;
+  jumpReady = !jumpReady;
+  updateHint();
+  draw();
+});
+for (const btn of document.querySelectorAll(".dpad [data-dir]")) {
+  btn.addEventListener("click", () => {
+    if (phase !== "escape") return;
+    const [dr, dc] = KEYS["arrow" + btn.dataset.dir];
+    move(dr, dc, jumpReady);
+  });
+}
+
+function setFlagMode(on) {
+  flagMode = on;
+  flagModeEl.setAttribute("aria-pressed", String(on));
+  flagModeEl.textContent = on ? "FLAG MODE: ON" : "FLAG MODE: OFF";
+}
+
+// Size tiles so the board always fits the screen (12 columns before the
+// glitch, the full grid after it).
+function fitBoard() {
+  const cols = phase === "sweeper" ? BOARD : GRID;
+  const base = phase === "sweeper" ? 34 : 30;
+  const room = Math.min(window.innerWidth, document.documentElement.clientWidth) - 64;
+  const tile = Math.max(12, Math.min(base, Math.floor(room / cols)));
+  document.documentElement.style.setProperty("--tile", `${tile}px`);
+  document.documentElement.style.setProperty("--s", String(tile / 30));
+}
 
 function inBounds(r, c) {
   return r >= 0 && r < GRID && c >= 0 && c < GRID;
@@ -85,8 +126,12 @@ function init() {
   overlayEl.classList.add("hidden");
   overlayRestartEl.classList.add("hidden");
   titleEl.textContent = "MINESWEEPER";
-  hintEl.textContent = "Left click to reveal. Right click to flag.";
+  hintEl.textContent = TOUCH
+    ? "Tap to reveal. Turn on flag mode to place flags."
+    : "Left click to reveal. Right click to flag.";
+  setFlagMode(false);
 
+  fitBoard();
   makeBoard();
   draw();
 }
@@ -121,7 +166,7 @@ function makeTiles(size, offset) {
       const el = document.createElement("div");
       el.className = "tile";
       if (!board[r][c].exists) el.classList.add("void");
-      el.addEventListener("click", () => onClick(r, c));
+      el.addEventListener("click", () => (flagMode ? onFlag(r, c) : onClick(r, c)));
       el.addEventListener("contextmenu", (e) => {
         e.preventDefault();
         onFlag(r, c);
@@ -237,6 +282,7 @@ function startGlitch(spawnR, spawnC) {
   overlayTextEl.dataset.text = "SOMETHING IS WRONG";
   overlayEl.classList.remove("hidden");
 
+  fitBoard();
   makeTiles(GRID, 0);
   draw();
 
@@ -336,15 +382,21 @@ function enterEscape(spawnR, spawnC) {
 }
 
 function updateHint() {
+  jumpEl.classList.toggle("armed", jumpReady);
   if (jumpReady) {
-    hintEl.textContent = "Jump armed — pick a direction (space to cancel).";
+    hintEl.textContent = TOUCH
+      ? "Jump armed. Pick a direction (JUMP again cancels)."
+      : "Jump armed. Pick a direction (space to cancel).";
     return;
   }
+  const controls = TOUCH
+    ? "Arrows to move, JUMP then an arrow to jump 2 tiles."
+    : "WASD to move, space+direction to jump, right-click to flag.";
   if (haveAllItems()) {
-    hintEl.textContent = "Door's unlocked. Get to the exit. WASD to move, space+direction to jump.";
+    hintEl.textContent = `Door's unlocked. Get to the exit. ${controls}`;
     return;
   }
-  hintEl.textContent = `Grab ${itemLine()}. WASD to move, space+direction to jump, right-click to flag.`;
+  hintEl.textContent = `Grab ${itemLine()}. ${controls}`;
 }
 
 function haveAllItems() {
